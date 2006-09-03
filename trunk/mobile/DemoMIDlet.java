@@ -1,6 +1,7 @@
 package mobile;
 
 import javax.microedition.lcdui.AlertType;
+import javax.microedition.lcdui.Canvas;
 import javax.microedition.lcdui.Choice;
 import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.CommandListener;
@@ -20,7 +21,7 @@ public class DemoMIDlet extends MIDlet implements CommandListener {
 	private Alert dialog;
 	private List menuList;
 	private Image logo;
-	final private SnakeGame game = new SnakeGame();
+	final private SnakeGame game = new SnakeGame(this);
 	
 
 	protected void startApp() throws MIDletStateChangeException {
@@ -32,22 +33,25 @@ public class DemoMIDlet extends MIDlet implements CommandListener {
 				logo = Image.createImage("/res/game.png");
 			}catch(Exception e){quit();}
 			// the menu list
-			menuList = new List("Snake One", Choice.IMPLICIT);
-			menuList.append("Start Game",null); // 0
-			menuList.append("High Scores",null); // 1
-			menuList.append("Help",null); // 2
-			menuList.append("About",null); // 2
-			menuList.append("Quit",null); // 3
-			menuList.setCommandListener(this);
-			// side buttons
-			exit = new Command("Exit", Command.EXIT, 1); menuList.addCommand(exit);
-			//menuOk = new Command("OK", Command.ITEM, 2); menuList.addCommand(menuOk);
-			Display display = Display.getDisplay(this);
-			display.setCurrent(menuList);
+			exit = new Command("Exit", Command.EXIT, 1);
+			drawMenu();
 			//TODO mostrar high scores se demorar para escolher
 		}
 	}
-
+	public void drawMenu(){
+		// the menu drawing is public and outside startApp, so the 
+		// game can go back to the menu.
+		menuList = new List("Snake One", Choice.IMPLICIT);
+		menuList.append("Start Game",null); // 0
+		menuList.append("High Scores",null); // 1
+		menuList.append("Help",null); // 2
+		menuList.append("About",null); // 2
+		menuList.append("Quit",null); // 3
+		menuList.setCommandListener(this);
+		menuList.addCommand(exit);
+		Display display = Display.getDisplay(this);
+		display.setCurrent(menuList);
+	}
 	protected void pauseApp() {
 		game.pause();
 		paused = true;
