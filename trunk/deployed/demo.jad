@@ -1,5 +1,5 @@
 MIDlet-1: demo,,mobile.DemoMIDlet
-MIDlet-Jar-Size: 1096
+MIDlet-Jar-Size: 3415
 MIDlet-Jar-URL: demo.jar
 MIDlet-Name: demo Midlet Suite
 MIDlet-Vendor: gcb
