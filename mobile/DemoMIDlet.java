@@ -1,5 +1,6 @@
 package mobile;
 
+import javax.microedition.lcdui.AlertType;
 import javax.microedition.lcdui.Choice;
 import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.CommandListener;
@@ -14,10 +15,11 @@ import javax.microedition.lcdui.Display;
 
 public class DemoMIDlet extends MIDlet implements CommandListener {
 	private boolean paused = false; // see comments in the constructor
-	//private Command exit; // commands for the default...
-	//private Command ok;  // ...side buttons.
-	//private Alert about;
+	private Command exit; // commands for the default...
+	private Command menuOk;  // ...side buttons.
+	private Alert dialog;
 	private List menuList;
+	private Image logo;
 	
 	public DemoMIDlet() {
 		super();
@@ -25,25 +27,23 @@ public class DemoMIDlet extends MIDlet implements CommandListener {
 			//TODO game.resumeGame();
 			return; // don't use multiple exit points. do as i say no as i do
 		}
-		
+		try{
+			logo = Image.createImage("/res/game.png");
+		}catch(Exception e){quit();}
 
 		// the menu screen
 		menuList = new List("Snake One", Choice.IMPLICIT);
-		try{
-			Image img = Image.createImage("/res/game.png");
-			menuList.append("Start Game",img);
-		}catch(Exception e){
-			menuList.append("Start Game",null);
-		}
-		menuList.append("High Scores",null);
-		menuList.append("About",null);
-		menuList.append("Quit",null);
-		//menuScreen.setCommandListener(this);
+		menuList.append("Start Game",null); // 0
+		menuList.append("High Scores",null); // 1
+		menuList.append("Help",null); // 2
+		menuList.append("About",null); // 2
+		menuList.append("Quit",null); // 3
+		menuList.setCommandListener(this);
 		// side buttons
-		//exit = new Command("Exit", Command.EXIT, 1);
-		//ok = new Command("About", Command.OK, 1);
-		//menuScreen.addCommand(exit);
-		//menuScreen.addCommand(ok);
+		exit = new Command("Exit", Command.EXIT, 1);
+		menuOk = new Command("OK", Command.OK, 2);
+		menuList.addCommand(exit);
+		menuList.addCommand(menuOk);
 	}
 
 	protected void startApp() throws MIDletStateChangeException {
@@ -63,23 +63,69 @@ public class DemoMIDlet extends MIDlet implements CommandListener {
 
 	}
 
+	
 	public void commandAction(Command cmd, Displayable displayable) {
 		/*if( cmd == exit ){
 			//TODO game.quit();
 			destroyApp(true);
 			notifyDestroyed();
 		}*/
-		
 		String label = cmd.getLabel();
 
-		if("EXIT".equals(label))
-			notifyDestroyed();
-		else if("HELP".equals(label))
-		  //displayHelp();
-			notifyDestroyed();
-		else if("OK".equals(label))
-		  //processForm();
-			notifyDestroyed();
+		if("Exit".equals(label)){
+			quit();
+		}else if("OK".equals(label)){
+			int option =  menuList.getSelectedIndex();
+			if( 0 == option ){
+				//startGame();
+			}else if( 1 == option ){
+				displayHighscores();
+			}else if( 2 == option ){
+				displayHelp();
+			}else if( 3 == option ){
+				displayAbout();
+			}else if( 4 == option ){
+				quit();
+			}
+		}
 	}
 
+	public void debug(String s){
+		dialog = new Alert("DEBUG", s, null, AlertType.INFO);
+		dialog.setString(s);
+		dialog.setTimeout(Alert.FOREVER);
+		Display display = Display.getDisplay(this);
+		display.setCurrent(dialog);
+	}
+	public void displayAbout() {
+		dialog = new Alert("About");
+		dialog.setImage(logo);
+		dialog.setString("The very first snake game.\nCoded to your cellphone by Gabriel Barros");
+		dialog.setType(AlertType.INFO);
+		dialog.setTimeout(Alert.FOREVER);
+		Display display = Display.getDisplay(this);
+		display.setCurrent(dialog);
+	}
+	public void displayHelp() {
+		dialog = new Alert("Help");
+		dialog.setImage(logo);
+		dialog.setString("You are the snake.\n You start in a random position in the screen, facing a random direction.\n move without hitting the walls or your own body.");
+		dialog.setType(AlertType.INFO);
+		dialog.setTimeout(Alert.FOREVER);
+		Display display = Display.getDisplay(this);
+		display.setCurrent(dialog);
+	}
+	public void displayHighscores() {
+		dialog = new Alert("High Score");
+		dialog.setImage(logo);
+		dialog.setString("503 not implemented");
+		dialog.setType(AlertType.INFO);
+		dialog.setTimeout(Alert.FOREVER);
+		Display display = Display.getDisplay(this);
+		display.setCurrent(dialog);
+	}
+	
+	public void quit(){
+		notifyDestroyed();
+	}
 }
