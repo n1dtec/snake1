@@ -16,68 +16,56 @@ import javax.microedition.lcdui.Display;
 public class DemoMIDlet extends MIDlet implements CommandListener {
 	private boolean paused = false; // see comments in the constructor
 	private Command exit; // commands for the default...
-	private Command menuOk;  // ...side buttons.
+	//private Command menuOk;  // ...side buttons.
 	private Alert dialog;
 	private List menuList;
 	private Image logo;
+	final private SnakeGame game = new SnakeGame();
 	
-	public DemoMIDlet() {
-		super();
-		if(paused) { // this is true if the user exited the game to use the phone and came back
-			//TODO game.resumeGame();
-			return; // don't use multiple exit points. do as i say no as i do
-		}
-		try{
-			logo = Image.createImage("/res/game.png");
-		}catch(Exception e){quit();}
-
-		// the menu screen
-		menuList = new List("Snake One", Choice.IMPLICIT);
-		menuList.append("Start Game",null); // 0
-		menuList.append("High Scores",null); // 1
-		menuList.append("Help",null); // 2
-		menuList.append("About",null); // 2
-		menuList.append("Quit",null); // 3
-		menuList.setCommandListener(this);
-		// side buttons
-		exit = new Command("Exit", Command.EXIT, 1);
-		menuOk = new Command("OK", Command.OK, 2);
-		menuList.addCommand(exit);
-		menuList.addCommand(menuOk);
-	}
 
 	protected void startApp() throws MIDletStateChangeException {
-		//Display.getDisplay(this).setCurrent(menuScreen);
-		Display display = Display.getDisplay(this);
-		display.setCurrent(menuList);
-		//TODO mostrar high scores se demorar para escolher
+		if(paused) { // this is true if the user exited the game to use the phone and came back
+			game.resume();
+		}else{
+			// load logo for the dialogs
+			try{
+				logo = Image.createImage("/res/game.png");
+			}catch(Exception e){quit();}
+			// the menu list
+			menuList = new List("Snake One", Choice.IMPLICIT);
+			menuList.append("Start Game",null); // 0
+			menuList.append("High Scores",null); // 1
+			menuList.append("Help",null); // 2
+			menuList.append("About",null); // 2
+			menuList.append("Quit",null); // 3
+			menuList.setCommandListener(this);
+			// side buttons
+			exit = new Command("Exit", Command.EXIT, 1); menuList.addCommand(exit);
+			//menuOk = new Command("OK", Command.ITEM, 2); menuList.addCommand(menuOk);
+			Display display = Display.getDisplay(this);
+			display.setCurrent(menuList);
+			//TODO mostrar high scores se demorar para escolher
+		}
 	}
 
 	protected void pauseApp() {
-		// TODO Auto-generated method stub
-
+		game.pause();
+		paused = true;
 	}
 
 	protected void destroyApp(boolean arg0) throws MIDletStateChangeException {
-		// TODO Auto-generated method stub
-
+		Display.getDisplay(this).setCurrent(null);
 	}
 
 	
 	public void commandAction(Command cmd, Displayable displayable) {
-		/*if( cmd == exit ){
-			//TODO game.quit();
-			destroyApp(true);
-			notifyDestroyed();
-		}*/
 		String label = cmd.getLabel();
-
 		if("Exit".equals(label)){
 			quit();
-		}else if("OK".equals(label)){
+		}else{ //else if("OK".equals(label)){ #any other button will do... don't know how to set label in the middle one...
 			int option =  menuList.getSelectedIndex();
 			if( 0 == option ){
-				//startGame();
+				Display.getDisplay(this).setCurrent( game );
 			}else if( 1 == option ){
 				displayHighscores();
 			}else if( 2 == option ){
@@ -100,7 +88,7 @@ public class DemoMIDlet extends MIDlet implements CommandListener {
 	public void displayAbout() {
 		dialog = new Alert("About");
 		dialog.setImage(logo);
-		dialog.setString("The very first snake game.\nCoded to your cellphone by Gabriel Barros");
+		dialog.setString("The very first snake game.\n\nCoded to your cellphone by Gabriel Barros");
 		dialog.setType(AlertType.INFO);
 		dialog.setTimeout(Alert.FOREVER);
 		Display display = Display.getDisplay(this);
@@ -109,7 +97,7 @@ public class DemoMIDlet extends MIDlet implements CommandListener {
 	public void displayHelp() {
 		dialog = new Alert("Help");
 		dialog.setImage(logo);
-		dialog.setString("You are the snake.\n You start in a random position in the screen, facing a random direction.\n move without hitting the walls or your own body.");
+		dialog.setString("You are the snake.\n\nYou start in a random position in the screen, facing a random direction.\n\nmove without hitting the walls or your own body.\n\nSurvive until the timer reaches zero.");
 		dialog.setType(AlertType.INFO);
 		dialog.setTimeout(Alert.FOREVER);
 		Display display = Display.getDisplay(this);
@@ -124,7 +112,6 @@ public class DemoMIDlet extends MIDlet implements CommandListener {
 		Display display = Display.getDisplay(this);
 		display.setCurrent(dialog);
 	}
-	
 	public void quit(){
 		notifyDestroyed();
 	}
