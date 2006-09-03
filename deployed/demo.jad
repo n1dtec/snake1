@@ -1,0 +1,8 @@
+MIDlet-1: demo,,mobile.DemoMIDlet
+MIDlet-Jar-Size: 1096
+MIDlet-Jar-URL: demo.jar
+MIDlet-Name: demo Midlet Suite
+MIDlet-Vendor: gcb
+MIDlet-Version: 1.0.1
+MicroEdition-Configuration: CLDC-1.1
+MicroEdition-Profile: MIDP-2.0
