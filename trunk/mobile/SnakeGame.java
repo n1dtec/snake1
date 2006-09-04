@@ -10,6 +10,7 @@ import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.CommandListener;
 import javax.microedition.lcdui.Displayable;
 import javax.microedition.lcdui.Graphics;
+import javax.microedition.lcdui.Image;
 
 public class SnakeGame extends Canvas implements CommandListener {
 	// interface and plumbing
@@ -20,8 +21,14 @@ public class SnakeGame extends Canvas implements CommandListener {
 	public static final int KEY_RIGHT = 3;
 	public static final int KEY_DOWN = 6;
 	public static final int KEY_LEFT = 9;
+	private Image i; // this one is tricky. the Canvas cannot read the damn colors it has, so we will
+	                          //simulate a doublebuffer update. basicaly, it will be our hash table with itens positions
+	                         //and we will check it for colisions, update the image, and print it on the lame canvas
+	private Graphics g;
+	private long lastTick = 0;
+	private int tickInterval = 1000;
 	// game parameters
-	private int backgroundColor = 0x000000;    
+	private int backgroundColor = 0xFF000000;
 	private int snakeColor = 0xffffff;
 	private int wallColor = 0xff0000;
 	private int W = getWidth();
@@ -33,8 +40,6 @@ public class SnakeGame extends Canvas implements CommandListener {
     private int y = 0;
     private int mx = 0; //movement, can be -1,0,1
     private int my = 1; // mx =1, my = 0 the snakes goes right.
-    //debug crap
-    private String s = "";
     
 	public SnakeGame(DemoMIDlet parent) {
 		super();
@@ -44,38 +49,62 @@ public class SnakeGame extends Canvas implements CommandListener {
 		addCommand(exit);
 		setCommandListener(this);
 		//x = (Math.abs(rand.nextInt()) % (getWidth() -10)) + 5; 
-		//y = (Math.abs(rand.nextInt()) % (getHeight() -10)) + 5; 
+		//y = (Math.abs(rand.nextInt()) % (getHeight() -10)) + 5;
+		x = 10; y = 10; mx = 1; my = 0;
+		// make our fake image
+		i = Image.createImage(W,H);
+		g = i.getGraphics();
+		// start
 		running = true;
+		loop();
 	}
+	private synchronized void loop () {
+		// only run at every seccond
+		//if( System.currentTimeMillis() - lastTick > tickInterval ){
+			//lastTick = System.currentTimeMillis();
 
-	protected void paint(Graphics g) {
+			// calculate new position
+			x+= mx * 5;
+			y+= my * 5;
+			// check for colision
+			int[] step = new int[5 * 5];
+			i.getRGB( step, 0, 5, 0, 0, 5, 5);
+			for( int index = 0; index < step.length; index++){
+				if( step[index] != backgroundColor ){
+					// DEAD never got this comparrision to work
+					this.setTitle( i.getGraphics().getDisplayColor(step[index]) + " " + i.getGraphics().getDisplayColor(backgroundColor));
+				}
+			}
+			 // draw
+		//}
+		//loop();
+	}
+	protected void paint(Graphics gMain) {
 		if( false == alreadyDrawMap ){
-			clearScreen(g);
-			drawScores(g);
+			clearScreen(gMain);
+			drawScores(gMain);
 			alreadyDrawMap = true;
 		}
 		g.setColor(snakeColor);
 		g.fillRect(x, y, 5, 5);
-		x+= mx * 5;
-		y+= my * 5;
-		//repaint();
+		gMain.drawImage(i, 0, 0, 0);
 	}
-	public void clearScreen(Graphics g){
+	public void clearScreen(Graphics gOld){
 		// paint it black
 		g.setColor(backgroundColor);
-		g.fillRect(0, 0, getWidth(), getHeight(  ));
+		g.fillRect(0, 0, W, H);
 		// raise walls
 		g.setColor(wallColor);
-		g.fillRect(0, 0, getWidth(), 5); // top
-		g.fillRect(0, 0, 5, getHeight(  )); // left
-		g.fillRect(getWidth()-5, 0, 5 , getHeight() ); //right
-		g.fillRect(0, getHeight()-5, getWidth(), 5 ); //bottom
+		g.fillRect(0, 0, W, 5); // top
+		g.fillRect(0, 0, 5, H); // left
+		g.fillRect(W-5, 0, 5 , H ); //right
+		g.fillRect(0, H-5, W, 5 ); //bottom
+		gOld.drawImage(i, 0, 0, 0);
 	}
 	public void drawScores(Graphics g){
 	      g.setColor(255, 255, 255);
-	      g.drawString(timer + "", 0, 0, g.TOP | g.LEFT);
+	      g.drawString(timer + "", 0, 0, Graphics.TOP | Graphics.LEFT);
 	}
-
 	public void keyPressed(int keycode) {
 		if( false == running ) return; 
 
@@ -86,25 +115,24 @@ public class SnakeGame extends Canvas implements CommandListener {
         	game_key = 0;
         }
 		int key = keycode;
-		int new_key = 0;
+		//int new_key = 0;
 		
 		if (game_key == Canvas.LEFT || key == Canvas.KEY_NUM4) {
     		//new_key = KEY_LEFT;
 			mx = -1; my = 0;
-		} else if (game_key == Canvas.RIGHT || key == Canvas.KEY_NUM6) {
+		}else if (game_key == Canvas.RIGHT || key == Canvas.KEY_NUM6) {
         	//new_key = KEY_RIGHT;
 			mx = 1; my = 0;
-        } else if (game_key == Canvas.UP || key == Canvas.KEY_NUM2) {
+        }else if (game_key == Canvas.UP || key == Canvas.KEY_NUM2) {
         	//new_key = KEY_UP;
         	mx = 0; my = -1;
-        } else if (game_key == Canvas.DOWN || key == Canvas.KEY_NUM8) {
+        }else if (game_key == Canvas.DOWN || key == Canvas.KEY_NUM8) {
         	//new_key = KEY_DOWN;
         	mx = 0; my = 1;
         }
-		repaint();
+		loop();
 	}
 	public void commandAction(Command cmd, Displayable displayable) {
-		s = cmd.getLabel();
 		if( cmd == exit ){
 			quit();
 		}

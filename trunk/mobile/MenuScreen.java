@@ -1,5 +1,6 @@
 package mobile;
 
+
 /*import javax.microedition.lcdui.Canvas;
 import javax.microedition.lcdui.Graphics;
 
@@ -27,6 +28,6 @@ public class MenuScreen extends Canvas {
       g.setColor(255, 0, 0);
       g.fillRect(0, 0, getWidth(), getHeight(  ));
       g.setColor(255, 255, 255);
-      g.drawString("Hello World!", 0, 0, g.TOP | g.LEFT);
+      g.drawString("Hello World!", 0, 0, Graphics.TOP | Graphics.LEFT);
    }
 }
